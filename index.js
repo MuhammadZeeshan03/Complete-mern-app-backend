@@ -3,6 +3,8 @@ const express = require('express')
 require('./db/config')
 const cors = require('cors')
 const User = require('./db/user')
+const Product = require('./db/Product')
+
 const app = express()
 
 app.use(express.json())
@@ -16,6 +18,12 @@ app.post('/register', async (req, res) => {
   let result = await user.save()
   result = result.toObject()
   delete result.password
+  res.send(result)
+})
+
+app.post('/addproduct', async (req, res) => {
+  let product = new Product(req.body)
+  let result = await product.save()
   res.send(result)
 })
 
