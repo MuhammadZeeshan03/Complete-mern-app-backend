@@ -12,6 +12,7 @@ app.use(cors())
 app.get('/', (req, res) => {
   res.send('on home page')
 })
+
 app.post('/register', async (req, res) => {
   let user = new User(req.body)
   res.send(req.body)
@@ -30,6 +31,12 @@ app.post('/addproduct', async (req, res) => {
 app.delete('/product/:id', async (req, res) => {
   const result = await Product.deleteOne({ _id: req.params.id })
   res.send(result)
+})
+
+app.get('/product/:id', async (req, res) => {
+  let result = await Product.findOne({ _id: req.params.id })
+  if (result) res.send(result)
+  else res.send('product not found')
 })
 
 app.get('/products', async (req, res) => {
