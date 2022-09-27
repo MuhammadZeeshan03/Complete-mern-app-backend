@@ -89,6 +89,7 @@ app.get('/search/:key', verifyToke, async (req, res) => {
 
 app.get('/products', verifyToke, async (req, res) => {
   let products = await Product.find()
+
   if (products.length > 0) {
     res.send(products)
   } else {
