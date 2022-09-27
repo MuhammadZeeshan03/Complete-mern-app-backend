@@ -14,7 +14,24 @@ app.get('/', (req, res) => {
   res.send('on home page')
 })
 
-app.post('/register', async (req, res) => {
+function verifyToke(req, res, next) {
+  let token = req.headers['authorization']
+  if (token) {
+    token -= token.split(' ')[1]
+    console.log('Middleware called', token)
+    jwt.verify(token, jwtkey, (err, authData) => {
+      if (err) {
+        res.send({ result: 'error' })
+      } else {
+        next()
+      }
+    })
+  } else {
+    res.send({ result: 'Add token with Result' })
+  }
+}
+
+app.post('/register', verifyToke, async (req, res) => {
   let user = new User(req.body)
 
   let result = await user.save()
@@ -29,24 +46,24 @@ app.post('/register', async (req, res) => {
   })
 })
 
-app.post('/addproduct', async (req, res) => {
+app.post('/addproduct', verifyToke, async (req, res) => {
   let product = new Product(req.body)
   let result = await product.save()
   res.send(result)
 })
 
-app.delete('/product/:id', async (req, res) => {
+app.delete('/product/:id', verifyToke, async (req, res) => {
   const result = await Product.deleteOne({ _id: req.params.id })
   res.send(result)
 })
 
-app.get('/product/:id', async (req, res) => {
+app.get('/product/:id', verifyToke, async (req, res) => {
   let result = await Product.findOne({ _id: req.params.id })
   if (result) res.send(result)
   else res.send('product not found')
 })
 
-app.put('/product/:id', async (req, res) => {
+app.put('/product/:id', verifyToke, async (req, res) => {
   let result = await Product.updateOne(
     { _id: req.params.id },
     { $set: req.body },
@@ -54,7 +71,7 @@ app.put('/product/:id', async (req, res) => {
   res.send(result)
 })
 
-app.get('/search/:key', async (req, res) => {
+app.get('/search/:key', verifyToke, async (req, res) => {
   let result = await Product.find({
     $or: [
       { name: { $regex: req.params.key } },
