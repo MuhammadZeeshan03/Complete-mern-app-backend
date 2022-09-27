@@ -55,18 +55,18 @@ app.post('/addproduct', verifyToke, async (req, res) => {
   res.send(result)
 })
 
-app.delete('/product/:id', async (req, res) => {
+app.delete('/product/:id', verifyToke, async (req, res) => {
   const result = await Product.deleteOne({ _id: req.params.id })
   res.send(result)
 })
 
-app.get('/product/:id', async (req, res) => {
+app.get('/product/:id', verifyToke, async (req, res) => {
   let result = await Product.findOne({ _id: req.params.id })
   if (result) res.send(result)
   else res.send('product not found')
 })
 
-app.put('/product/:id', async (req, res) => {
+app.put('/product/:id', verifyToke, async (req, res) => {
   let result = await Product.updateOne(
     { _id: req.params.id },
     { $set: req.body },
@@ -87,7 +87,7 @@ app.get('/search/:key', verifyToke, async (req, res) => {
   console.log('response sent')
 })
 
-app.get('/products', async (req, res) => {
+app.get('/products', verifyToke, async (req, res) => {
   let products = await Product.find()
   if (products.length > 0) {
     res.send(products)
