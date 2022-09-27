@@ -16,12 +16,14 @@ app.get('/', (req, res) => {
 
 function verifyToke(req, res, next) {
   let token = req.headers['authorization']
+  console.log('Here is ', token)
+
   if (token) {
-    token -= token.split(' ')[1]
+    token = token.split(' ')[1]
     console.log('Middleware called', token)
     jwt.verify(token, jwtkey, (err, authData) => {
       if (err) {
-        res.send({ result: 'error' })
+        res.send({ result: 'error123' })
       } else {
         next()
       }
@@ -31,12 +33,14 @@ function verifyToke(req, res, next) {
   }
 }
 
-app.post('/register', verifyToke, async (req, res) => {
+app.post('/register', async (req, res) => {
   let user = new User(req.body)
+  console.log(user)
 
   let result = await user.save()
   result = result.toObject()
   delete result.password
+  console.log(result)
 
   jwt.sign({ result }, jwtkey, { expiresIn: '1h' }, (err, token) => {
     if (err) {
@@ -46,24 +50,24 @@ app.post('/register', verifyToke, async (req, res) => {
   })
 })
 
-app.post('/addproduct', verifyToke, async (req, res) => {
+app.post('/addproduct', async (req, res) => {
   let product = new Product(req.body)
   let result = await product.save()
   res.send(result)
 })
 
-app.delete('/product/:id', verifyToke, async (req, res) => {
+app.delete('/product/:id', async (req, res) => {
   const result = await Product.deleteOne({ _id: req.params.id })
   res.send(result)
 })
 
-app.get('/product/:id', verifyToke, async (req, res) => {
+app.get('/product/:id', async (req, res) => {
   let result = await Product.findOne({ _id: req.params.id })
   if (result) res.send(result)
   else res.send('product not found')
 })
 
-app.put('/product/:id', verifyToke, async (req, res) => {
+app.put('/product/:id', async (req, res) => {
   let result = await Product.updateOne(
     { _id: req.params.id },
     { $set: req.body },
@@ -71,7 +75,7 @@ app.put('/product/:id', verifyToke, async (req, res) => {
   res.send(result)
 })
 
-app.get('/search/:key', verifyToke, async (req, res) => {
+app.get('/search/:key', async (req, res) => {
   let result = await Product.find({
     $or: [
       { name: { $regex: req.params.key } },
@@ -95,8 +99,10 @@ app.get('/products', async (req, res) => {
 
 app.post('/login', async (req, res) => {
   console.log(req.body)
+
   if (req.body.password && req.body.email) {
     let user = await User.findOne(req.body).select('-password')
+
     if (user) {
       jwt.sign({ user }, jwtkey, { expiresIn: '1h' }, (err, token) => {
         if (err) {
