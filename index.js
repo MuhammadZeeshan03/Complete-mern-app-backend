@@ -4,7 +4,8 @@ require('./db/config')
 const cors = require('cors')
 const User = require('./db/user')
 const Product = require('./db/Product')
-
+const jwt = require('jsonwebtoken')
+const jwtkey = 'my_secret_key'
 const app = express()
 
 app.use(express.json())
@@ -15,11 +16,17 @@ app.get('/', (req, res) => {
 
 app.post('/register', async (req, res) => {
   let user = new User(req.body)
-  res.send(req.body)
+
   let result = await user.save()
   result = result.toObject()
   delete result.password
-  res.send(result)
+
+  jwt.sign({ result }, jwtkey, { expiresIn: '1h' }, (err, token) => {
+    if (err) {
+      res.send({ result: 'error' })
+    }
+    res.send({ result, auth: token })
+  })
 })
 
 app.post('/addproduct', async (req, res) => {
@@ -52,6 +59,8 @@ app.get('/search/:key', async (req, res) => {
     $or: [
       { name: { $regex: req.params.key } },
       { company: { $regex: req.params.key } },
+      { price: { $regex: req.params.key } },
+      { category: { $regex: req.params.key } },
     ],
   })
   res.send(result)
@@ -72,7 +81,12 @@ app.post('/login', async (req, res) => {
   if (req.body.password && req.body.email) {
     let user = await User.findOne(req.body).select('-password')
     if (user) {
-      res.send(user)
+      jwt.sign({ user }, jwtkey, { expiresIn: '1h' }, (err, token) => {
+        if (err) {
+          res.send('error')
+        }
+        res.send({ user, auth: token })
+      })
     } else {
       res.send({ result: 'No user Found' })
     }
