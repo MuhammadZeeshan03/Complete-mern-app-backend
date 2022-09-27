@@ -39,6 +39,14 @@ app.get('/product/:id', async (req, res) => {
   else res.send('product not found')
 })
 
+app.put('/product/:id', async (req, res) => {
+  let result = await Product.updateOne(
+    { _id: req.params.id },
+    { $set: req.body },
+  )
+  res.send(result)
+})
+
 app.get('/products', async (req, res) => {
   let products = await Product.find()
   if (products.length > 0) {
