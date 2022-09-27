@@ -17,19 +17,18 @@ app.get('/', (req, res) => {
 function verifyToke(req, res, next) {
   let token = req.headers['authorization']
   console.log('Here is ', token)
-
   if (token) {
     token = token.split(' ')[1]
     console.log('Middleware called', token)
     jwt.verify(token, jwtkey, (err, authData) => {
       if (err) {
-        res.send({ result: 'error123' })
+        res.status(401).send({ result: 'Please Enter Valid Token' })
       } else {
         next()
       }
     })
   } else {
-    res.send({ result: 'Add token with Result' })
+    res.status(403).send({ result: 'Add token with Header' })
   }
 }
 
@@ -50,7 +49,7 @@ app.post('/register', async (req, res) => {
   })
 })
 
-app.post('/addproduct', async (req, res) => {
+app.post('/addproduct', verifyToke, async (req, res) => {
   let product = new Product(req.body)
   let result = await product.save()
   res.send(result)
@@ -75,7 +74,7 @@ app.put('/product/:id', async (req, res) => {
   res.send(result)
 })
 
-app.get('/search/:key', async (req, res) => {
+app.get('/search/:key', verifyToke, async (req, res) => {
   let result = await Product.find({
     $or: [
       { name: { $regex: req.params.key } },
