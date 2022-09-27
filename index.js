@@ -47,6 +47,17 @@ app.put('/product/:id', async (req, res) => {
   res.send(result)
 })
 
+app.get('/search/:key', async (req, res) => {
+  let result = await Product.find({
+    $or: [
+      { name: { $regex: req.params.key } },
+      { company: { $regex: req.params.key } },
+    ],
+  })
+  res.send(result)
+  console.log('response sent')
+})
+
 app.get('/products', async (req, res) => {
   let products = await Product.find()
   if (products.length > 0) {
